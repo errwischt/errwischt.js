@@ -1,0 +1,16 @@
+{
+  "author": "Georg Tavonius <g.tavonius@gmail.com> (http://jaz-lounge.com)",
+  "name": "errortracker",
+  "description": "JS Error tracker with own API for custom errors.",
+  "version": "0.0.1",
+  "engines": {
+    "node": "~0.8"
+  },
+  "dependencies": {
+    "connect": "2.7.x",
+    "dispatch": "0.2.x",
+    "quip": "0.x",
+    "handlebars": "1.x"
+  },
+  "devDependencies": {}
+}
