@@ -1,8 +1,8 @@
 {
   "author": "Georg Tavonius <g.tavonius@gmail.com> (http://jaz-lounge.com)",
-  "name": "errortracker",
-  "description": "JS Error tracker with own API for custom errors.",
-  "version": "0.0.1",
+  "name": "bandage.js",
+  "description": "JS endpoint for bandage Error tracker.",
+  "version": "0.1.0",
   "engines": {
     "node": "~0.8"
   },
