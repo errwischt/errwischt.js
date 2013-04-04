@@ -1,8 +1,15 @@
+/**
+ * Bandage error handler, send error messages to server
+ * Set bandage.data to have additional information send to the server
+ * Needs JSON.stringify to send data to server
+ */
 (function(win, doc, navigator) {
   "use strict";
   var docElement = doc.documentElement,
       body       = doc.getElementsByTagName('body')[0],
       defaultOnError = win.onerror,
+
+      bandage = win.bandage || {},
 
       viewport;
 
@@ -12,7 +19,10 @@
     viewport = { width: width, height: height };
   }
 
-  window.onerror = function(errorMessage, file, lineNum) {
+  function send(errorMessage, file, lineNum) {
+    if (!bandage.server) {
+      throw "BandageError: Please set the server url via bandage.server";
+    }
     createViewport();
     var obj = {
       time: new Date(),
@@ -39,13 +49,22 @@
       },
       request: {
         url: doc.location.href,
-        queryString: doc.location.searc
-      }
+        queryString: doc.location.search
+      },
+      data: bandage.data || null
     };
-    console.log("bandage", obj);
+
+    var image = new Image();
+    image.src = bandage.server + '/add?data=' + encodeURIComponent(JSON.stringify(obj));
+  }
+
+  window.onerror = function(errorMessage, file, lineNum) {
+    bandage.send(errorMessage, file, lineNum);
 
     if (defaultOnError) {
       defaultOnError(errorMessage, file, lineNum);
     }
   };
+
+  bandage.send = send;
 }(window, document, navigator));
