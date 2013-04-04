@@ -1,4 +1,12 @@
-(function(doc) {
+(function(win) {
   "use strict";
-  console.log("TODO");
-}(document));
+  var defaultOnError = win.onerror;
+
+  window.onerror = function(errorMessage, url, lineNum) {
+    console.log("bandage", arguments);
+
+    if (defaultOnError) {
+      defaultOnError(errorMessage, url, lineNum);
+    }
+  };
+}(window));
