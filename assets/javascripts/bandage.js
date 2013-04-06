@@ -26,6 +26,7 @@
     createViewport();
     var obj = {
       time: new Date(),
+      type: 'Bandage JavaScriptError',
       error: {
         message: errorMessage,
         file: file,
