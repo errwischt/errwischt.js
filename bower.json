@@ -1,0 +1,19 @@
+{
+  "name": "bandage.js",
+  "version": "0.1.0",
+  "authors": [
+    "Calamari <g.tavonius@gmail.com>"
+  ],
+  "description": "JS endpoint for bandage Error tracker.",
+  "main": "assets/javascripts/bandage.js",
+  "license": "MIT",
+  "ignore": [
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "tracekit": "https://github.com/Calamari/TraceKit.git"
+  }
+}

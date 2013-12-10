@@ -12,5 +12,9 @@
     "quip": "0.x",
     "handlebars": "1.x"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "sinon": "~1.7.3",
+    "mocha": "~1.15.1",
+    "mocha-sinon": "~1.1.0"
+  }
 }

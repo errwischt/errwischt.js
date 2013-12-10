@@ -1,6 +1,14 @@
 describe('Bandage.js', function() {
   var origImageConstructor, lastImage = null;
 
+  function TestError(message) {
+    this.name = "TestError";
+    this.message = (message || "");
+    Error.apply(this);
+  }
+  TestError.prototype = new Error();
+  TestError.prototype.constructor = TestError;
+
   function popLastSendData() {
     expect(lastImage).to.not.be(null);
     var data = decodeURIComponent(lastImage.src.split('data=')[1]);
@@ -13,10 +21,13 @@ describe('Bandage.js', function() {
     window.Image = function() {
       lastImage = this;
     };
+    // We do not make any requests (but TraceKit does)
+    this.server = sinon.fakeServer.create();
   });
 
   afterEach(function() {
     window.Image = origImageConstructor;
+    this.server.restore();
   });
 
   describe('when not initialized', function() {
@@ -50,8 +61,13 @@ describe('Bandage.js', function() {
         Bandage.stop();
       });
 
-      it('.will not send the request onerror', function() {
+      it('.onerror will not send a request', function() {
         window.onerror('My damn error', 'intheface.js', 3);
+        expect(lastImage).to.equal(null);
+      });
+
+      it('.save will not send a request', function() {
+        Bandage.send(new TestError('My damn error'));
         expect(lastImage).to.equal(null);
       });
     });
@@ -72,32 +88,28 @@ describe('Bandage.js', function() {
         Bandage.send('my test error');
         var data = popLastSendData();
         expect(data.error.message).to.equal('my test error');
-        expect(data.error.file).to.equal('');
-        expect(data.error.lineNum).to.equal(0);
+        expect(data.error.type).to.equal('SimpleError');
       });
 
-      it('.send with a message, file and lineNum specified', function() {
-        Bandage.send('my test error', 'file.js', 123);
+      it('.send with message string and error name specified', function() {
+        Bandage.send('An Error', 'my test error');
         var data = popLastSendData();
         expect(data.error.message).to.equal('my test error');
-        expect(data.error.file).to.equal('file.js');
-        expect(data.error.lineNum).to.equal(123);
+        expect(data.error.type).to.equal('An Error');
       });
 
-      it('.send with a message and file specified', function() {
-        Bandage.send('my test error', 'file.js');
+      it('.send with a proper error', function() {
+        Bandage.send(new TestError('my test error'));
         var data = popLastSendData();
         expect(data.error.message).to.equal('my test error');
-        expect(data.error.file).to.equal('file.js');
-        expect(data.error.lineNum).to.equal(0);
+        expect(data.error.type).to.equal('TestError');
       });
 
-      it('.will not send the request onerror', function() {
+      it('.onerror will send the error as UncaughtError', function() {
         window.onerror('My damn error', 'intheface.js', 3);
         var data = popLastSendData();
         expect(data.error.message).to.equal('My damn error');
-        expect(data.error.file).to.equal('intheface.js');
-        expect(data.error.lineNum).to.equal(3);
+        expect(data.error.type).to.equal('UncaughtError');
       });
     });
 
@@ -105,7 +117,7 @@ describe('Bandage.js', function() {
       var errorData;
       beforeEach(function() {
         Bandage.start();
-        Bandage.send(new Error('my own error'));
+        Bandage.send(new TestError('my own error'));
         errorData = popLastSendData();
       });
 
@@ -117,10 +129,22 @@ describe('Bandage.js', function() {
         expect(errorData.time).to.not.equal(null);
       });
 
-      it('a complete error definition', function() {
+      it('a message', function() {
         expect(errorData.error.message).to.equal('my own error');
-        expect(errorData.error.file).to.equal('');
-        expect(errorData.error.lineNum).to.equal(0);
+      });
+
+      it('a class name of error', function() {
+        expect(errorData.error.type).to.equal('TestError');
+      });
+
+      it('a stack trace', function() {
+        expect(errorData.stackTrace.length).to.equal(3);
+        var stackItem = errorData.stackTrace[0];
+        expect(stackItem.column).to.equal(25);
+        // TODO: the stack trace seems not quite right, it should be start in line 120
+        expect(stackItem.lineNumber).to.equal(9);
+        expect(stackItem.methodName).to.equal('Suite.<anonymous>');
+        expect(stackItem.file).to.contain('bandage_test.js');
       });
 
       it('the environment set', function() {
@@ -147,14 +171,17 @@ describe('Bandage.js', function() {
       var errorData;
       beforeEach(function() {
         Bandage.start();
-        Bandage.send(new Error('my own error'), { custom: 'data', foo: 42 });
+        Bandage.send(new TestError('my own error'), { custom: 'data', foo: 42 });
         errorData = popLastSendData();
       });
 
       it('a complete error definition', function() {
         expect(errorData.error.message).to.equal('my own error');
-        expect(errorData.error.file).to.equal('');
-        expect(errorData.error.lineNum).to.equal(0);
+        expect(errorData.error.type).to.equal('TestError');
+      });
+
+      it('a stack trace', function() {
+        expect(errorData.stackTrace).to.not.be.empty();
       });
 
       it('sends the custom data along', function() {
@@ -177,6 +204,14 @@ describe('Bandage.js', function() {
         expect(errorData.error.message).to.equal('baam');
         expect(errorData.data.custom).to.equal('data');
         expect(errorData.data.foo).to.equal(42);
+        expect(errorData.data.bar).to.equal(1);
+      });
+
+      it('is also used by onerror errors', function() {
+        window.onerror('baam', 'intheface.js', 3);
+        errorData = popLastSendData();
+        expect(errorData.error.message).to.equal('baam');
+        expect(errorData.data.custom).to.equal('yes');
         expect(errorData.data.bar).to.equal(1);
       });
 

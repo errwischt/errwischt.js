@@ -6,11 +6,43 @@
 </head>
 <body>
   <div id="mocha"></div>
+  <script src="../bower_components/tracekit/tracekit.js"></script>
   <script src="../assets/javascripts/bandage.js"></script>
 
   <script src="expect.js"></script>
   <script src="mocha.js"></script>
+  <script src="../node_modules/mocha-sinon/sinon-1.6.0.js"></script>
   <script>mocha.setup('bdd')</script>
+  <script>
+    // Disabling Mocha overriding onerror handler
+    // This is a copy from mocha, and outcommented is the uncaughtException rule
+    Mocha.Runner.prototype.run = function(fn){
+      var self = this
+        , fn = fn || function(){};
+
+      function uncaught(err){
+        self.uncaught(err);
+      }
+
+      // callback
+      this.on('end', function(){
+        process.removeListener('uncaughtException', uncaught);
+        fn(self.failures);
+      });
+
+      // run suites
+      this.emit('start');
+      this.runSuite(this.suite, function(){
+        self.emit('end');
+      });
+
+      // uncaught exception
+      // process.on('uncaughtException', uncaught);
+
+      return this;
+    };
+
+  </script>
 
   <script src="./javascripts/bandage_test.js"></script>
   <script>
