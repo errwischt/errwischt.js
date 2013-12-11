@@ -68,6 +68,7 @@
 
     var viewport = calculateViewport(),
         image    = new Image(),
+        token    = Bandage._apiKey,
         obj;
 
     obj = {
@@ -102,7 +103,7 @@
     };
 
     // TODO: Use CORS instead of an image
-    image.src = 'http://api.bandagejs.com/add?data=' + encodeURIComponent(JSON.stringify(obj));
+    image.src = 'http://api.bandagejs.com/add?token=' + encodeURIComponent(token) + 'data=' + encodeURIComponent(JSON.stringify(obj));
 
   }
 

@@ -84,6 +84,11 @@ describe('Bandage.js', function() {
         expect(Bandage.isCapturing).to.equal(true);
       });
 
+      it('.send will send the request using the apiKey used in setup', function() {
+        Bandage.send('my test error');
+        expect(lastImage.src).to.contain('token=thisismyapikey');
+      });
+
       it('.send with only message specified', function() {
         Bandage.send('my test error');
         var data = popLastSendData();
