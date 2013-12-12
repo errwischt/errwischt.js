@@ -5,6 +5,7 @@ describe('Bandage.js', function() {
     this.name = "TestError";
     this.message = (message || "");
     Error.apply(this);
+    this.stack = (new Error()).stack;
   }
   TestError.prototype = new Error();
   TestError.prototype.constructor = TestError;
@@ -143,12 +144,11 @@ describe('Bandage.js', function() {
       });
 
       it('a stack trace', function() {
-        expect(errorData.stackTrace.length).to.equal(3);
+        expect(errorData.stackTrace.length).to.equal(6);
         var stackItem = errorData.stackTrace[0];
-        expect(stackItem.column).to.equal(25);
-        // TODO: the stack trace seems not quite right, it should be start in line 120
-        expect(stackItem.lineNumber).to.equal(9);
-        expect(stackItem.methodName).to.equal('Suite.<anonymous>');
+        expect(stackItem.column).to.equal(22);
+        expect(stackItem.lineNumber).to.equal(126);
+        expect(stackItem.methodName).to.equal('Context.<anonymous>');
         expect(stackItem.file).to.contain('bandage_test.js');
       });
 
