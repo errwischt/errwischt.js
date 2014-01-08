@@ -1234,8 +1234,7 @@ window.TraceKit = TraceKit;
       stackTrace: rewriteStackTrace(stack)
     };
 
-    // TODO: Check that this is really CORS
-    sendRequest('http://api.bandagejs.com/add', 'POST', {
+    sendRequest(Bandage.ENV === 'development' ? 'http://bandage.local:8181/add' : 'http://api.bandagejs.com/add', 'POST', {
       token: token,
       data: JSON.stringify(obj)
     });

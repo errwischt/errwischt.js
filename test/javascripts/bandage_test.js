@@ -91,6 +91,16 @@ describe('Bandage.js', function() {
         expect(server.requests[0].requestBody.token).to.equal('thisismyapikey');
       });
 
+      it('.send will send the request to bandage.local when on ENV=development', function() {
+        Bandage.ENV = 'development';
+        server.respondWith('POST', 'http://bandage.local:8181/add', [200, {}, "Oh hi"]);
+        Bandage.send('my test error');
+        expect(server.requests.length).to.equal(1);
+        expect(server.requests[0].url).to.equal('http://bandage.local:8181/add');
+        expect(server.requests[0].requestBody.token).to.equal('thisismyapikey');
+        delete Bandage.ENV;
+      });
+
       it('.send with only message specified', function() {
         Bandage.send('my test error');
         var data = popLastSendData();
@@ -148,7 +158,7 @@ describe('Bandage.js', function() {
         expect(errorData.stackTrace.length).to.equal(6);
         var stackItem = errorData.stackTrace[0];
         expect(stackItem.column).to.equal(22);
-        expect(stackItem.lineNumber).to.equal(127);
+        expect(stackItem.lineNumber).to.equal(137);
         expect(stackItem.methodName).to.equal('Context.<anonymous>');
         expect(stackItem.file).to.contain('bandage_test.js');
       });
