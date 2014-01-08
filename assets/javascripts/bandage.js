@@ -61,13 +61,29 @@
     return trace;
   }
 
+  function sendRequest(url, method, data) {
+    var xhr = new win.XMLHttpRequest();
+    if ('withCredentials' in xhr) {
+      // XHR for Chrome/Firefox/Opera/Safari.
+      xhr.open(method, url, true);
+    } else if (win.XDomainRequest) {
+      // XDomainRequest for IE.
+      xhr = new XDomainRequest();
+      xhr.open(method, url);
+    } else {
+      console.log("CORS not supported.");
+      return;
+    }
+
+    xhr.send(data);
+  }
+
   function makeRequest(type, message, stack, customData) {
     if (!Bandage.isCapturing) {
       return;
     }
 
     var viewport = calculateViewport(),
-        image    = new Image(),
         token    = Bandage._apiKey,
         obj;
 
@@ -102,9 +118,11 @@
       stackTrace: rewriteStackTrace(stack)
     };
 
-    // TODO: Use CORS instead of an image
-    image.src = 'http://api.bandagejs.com/add?token=' + encodeURIComponent(token) + 'data=' + encodeURIComponent(JSON.stringify(obj));
-
+    // TODO: Check that this is really CORS
+    sendRequest('http://api.bandagejs.com/add', 'POST', {
+      token: token,
+      data: JSON.stringify(obj)
+    });
   }
 
 
@@ -133,7 +151,6 @@
       merge(this._customData, data);
     },
     send: function(name, message, customData) {
-
       if (typeof name === 'object') { // It should be an Error Object
         customData = message;
         var error = tracekit.computeStackTrace(name);

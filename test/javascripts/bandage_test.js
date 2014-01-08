@@ -1,5 +1,5 @@
 describe('Bandage.js', function() {
-  var origImageConstructor, lastImage = null;
+  var server;
 
   function TestError(message) {
     this.name = "TestError";
@@ -11,24 +11,21 @@ describe('Bandage.js', function() {
   TestError.prototype.constructor = TestError;
 
   function popLastSendData() {
-    expect(lastImage).to.not.be(null);
-    var data = decodeURIComponent(lastImage.src.split('data=')[1]);
-    lastImage = null;
-    return eval('('+data+')');
+    expect(server.requests.length).to.not.equal(0);
+    var req = server.requests.pop();
+    return JSON.parse(req.requestBody.data);
   }
 
+  beforeEach(function enableCORS() {
+    sinon.FakeXMLHttpRequest.prototype.withCredentials = sinon.FakeXMLHttpRequest.prototype.withCredentials || true;
+  })
+
   beforeEach(function() {
-    origImageConstructor = window.Image;
-    window.Image = function() {
-      lastImage = this;
-    };
-    // We do not make any requests (but TraceKit does)
-    this.server = sinon.fakeServer.create();
+    server = sinon.fakeServer.create();
   });
 
   afterEach(function() {
-    window.Image = origImageConstructor;
-    this.server.restore();
+    server.restore();
   });
 
   describe('when not initialized', function() {
@@ -64,12 +61,13 @@ describe('Bandage.js', function() {
 
       it('.onerror will not send a request', function() {
         window.onerror('My damn error', 'intheface.js', 3);
-        expect(lastImage).to.equal(null);
+        expect(server.requests.length).to.equal(0);
       });
 
       it('.save will not send a request', function() {
         Bandage.send(new TestError('My damn error'));
-        expect(lastImage).to.equal(null);
+        // This two calls are from tracekit to determine stacktrace
+        expect(server.requests.length).to.equal(2);
       });
     });
 
@@ -86,8 +84,11 @@ describe('Bandage.js', function() {
       });
 
       it('.send will send the request using the apiKey used in setup', function() {
+        server.respondWith('POST', 'http://api.bandagejs.com/add', [200, {}, "Oh hi"]);
         Bandage.send('my test error');
-        expect(lastImage.src).to.contain('token=thisismyapikey');
+        expect(server.requests.length).to.equal(1);
+        expect(server.requests[0].url).to.equal('http://api.bandagejs.com/add');
+        expect(server.requests[0].requestBody.token).to.equal('thisismyapikey');
       });
 
       it('.send with only message specified', function() {
@@ -147,7 +148,7 @@ describe('Bandage.js', function() {
         expect(errorData.stackTrace.length).to.equal(6);
         var stackItem = errorData.stackTrace[0];
         expect(stackItem.column).to.equal(22);
-        expect(stackItem.lineNumber).to.equal(126);
+        expect(stackItem.lineNumber).to.equal(127);
         expect(stackItem.methodName).to.equal('Context.<anonymous>');
         expect(stackItem.file).to.contain('bandage_test.js');
       });
