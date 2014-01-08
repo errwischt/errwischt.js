@@ -111,7 +111,8 @@
         platform: navigator.platform
       },
       request: {
-        url: doc.location.href,
+        // url without search
+        url: doc.location.protocol + '//' + doc.location.pathname,
         queryString: doc.location.search
       },
       data: customData,

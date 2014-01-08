@@ -168,7 +168,10 @@ describe('Bandage.js', function() {
       });
 
       it('the request data', function() {
-        expect(errorData.request.url).to.equal(document.location.href);
+        if (document.location.href.indexOf('?') === -1) {
+          document.location.href += '?test';
+        }
+        expect(errorData.request.url).to.equal(document.location.href.split('?')[0]);
         expect(errorData.request.queryString).to.equal(document.location.search);
       });
     });
