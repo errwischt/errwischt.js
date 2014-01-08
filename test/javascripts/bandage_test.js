@@ -13,7 +13,7 @@ describe('Bandage.js', function() {
   function popLastSendData() {
     expect(server.requests.length).to.not.equal(0);
     var req = server.requests.pop();
-    return JSON.parse(req.requestBody.data);
+    return JSON.parse(req.requestBody).data;
   }
 
   beforeEach(function enableCORS() {
@@ -88,7 +88,8 @@ describe('Bandage.js', function() {
         Bandage.send('my test error');
         expect(server.requests.length).to.equal(1);
         expect(server.requests[0].url).to.equal('http://api.bandagejs.com/add');
-        expect(server.requests[0].requestBody.token).to.equal('thisismyapikey');
+        var body = JSON.parse(server.requests[0].requestBody);
+        expect(body.token).to.equal('thisismyapikey');
       });
 
       it('.send will send the request to bandage.local when on ENV=development', function() {
@@ -97,7 +98,8 @@ describe('Bandage.js', function() {
         Bandage.send('my test error');
         expect(server.requests.length).to.equal(1);
         expect(server.requests[0].url).to.equal('http://bandage.local:8181/add');
-        expect(server.requests[0].requestBody.token).to.equal('thisismyapikey');
+        var body = JSON.parse(server.requests[0].requestBody);
+        expect(body.token).to.equal('thisismyapikey');
         delete Bandage.ENV;
       });
 
@@ -158,7 +160,7 @@ describe('Bandage.js', function() {
         expect(errorData.stackTrace.length).to.equal(6);
         var stackItem = errorData.stackTrace[0];
         expect(stackItem.column).to.equal(22);
-        expect(stackItem.lineNumber).to.equal(137);
+        expect(stackItem.lineNumber).to.equal(139);
         expect(stackItem.methodName).to.equal('Context.<anonymous>');
         expect(stackItem.file).to.contain('bandage_test.js');
       });

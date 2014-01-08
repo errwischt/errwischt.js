@@ -75,7 +75,8 @@
       return;
     }
 
-    xhr.send(data);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify(data));
   }
 
   function makeRequest(type, message, stack, customData) {
@@ -112,7 +113,7 @@
       },
       request: {
         // url without search
-        url: doc.location.protocol + '//' + doc.location.pathname,
+        url: doc.location.href.replace(doc.location.search, ''),
         queryString: doc.location.search
       },
       data: customData,
@@ -121,7 +122,7 @@
 
     sendRequest(Bandage.ENV === 'development' ? 'http://bandage.local:8181/add' : 'http://api.bandagejs.com/add', 'POST', {
       token: token,
-      data: JSON.stringify(obj)
+      data: obj
     });
   }
 
