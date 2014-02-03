@@ -2,7 +2,7 @@
   "author": "Georg Tavonius <g.tavonius@gmail.com> (http://jaz-lounge.com)",
   "name": "bandage.js",
   "description": "JS endpoint for bandage Error tracker.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "engines": {
     "node": "~0.8"
   },

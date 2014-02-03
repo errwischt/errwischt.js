@@ -1205,7 +1205,10 @@ window.TraceKit = TraceKit;
 
     obj = {
       time: new Date(),
-      type: 'Bandage JavaScriptError',
+      client: {
+        name: 'bandage.js',
+        version: '0.2.1'
+      },
       error: {
         type: type,
         message: message

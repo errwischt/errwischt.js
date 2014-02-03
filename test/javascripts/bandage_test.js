@@ -140,8 +140,9 @@ describe('Bandage.js', function() {
         errorData = popLastSendData();
       });
 
-      it('sends the sending script with you', function() {
-        expect(errorData.type).to.equal('Bandage JavaScriptError');
+      it('sends info about itself with error', function() {
+        expect(errorData.client.name).to.equal('bandage.js');
+        expect(errorData.client.version).to.not.equal(null);
       });
 
       it('sends a time', function() {

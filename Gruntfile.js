@@ -1,4 +1,6 @@
 module.exports = function(grunt) {
+  var pkg = require('./package.json');
+
   grunt.initConfig({
     concat: { // grunt-contrib-concat
       dist: {
@@ -6,7 +8,10 @@ module.exports = function(grunt) {
         dest: 'bandage.js'
       },
       options: {
-        separator: ';',
+        process: function(src) {
+          return src.replace('$VERSION$', pkg.version);
+        },
+        separator: ';'
       }
     },
     uglify: { // grunt-contrib-uglify

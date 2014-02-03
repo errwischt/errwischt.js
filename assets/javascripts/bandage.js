@@ -90,7 +90,10 @@
 
     obj = {
       time: new Date(),
-      type: 'Bandage JavaScriptError',
+      client: {
+        name: 'bandage.js',
+        version: '$VERSION$'
+      },
       error: {
         type: type,
         message: message
