@@ -147,7 +147,7 @@
       time: new Date(),
       client: {
         name: 'bandage.js',
-        version: '$VERSION$'
+        version: '0.3.0'
       },
       error: {
         type: type,
