@@ -23,12 +23,19 @@ module.exports = function(grunt) {
           preserveComments: 'some'
         }
       }
+    },
+    watch: {
+      javascript: {
+        files: ['assets/**/*.js'],
+        tasks: ['build']
+      }
     }
   });
 
 
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
   grunt.registerTask('build', ['concat', 'uglify']);
 };
