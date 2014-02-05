@@ -621,8 +621,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             return null;
         }
 
-        var chrome = /^\s*at (?:((?:\[object object\])?\S+(?: \[as \S+\])?) )?\(?((?:file|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
-            gecko = /^\s*(\S*)(?:\((.*?)\))?@((?:file|http|https).*?):(\d+)(?::(\d+))?\s*$/i,
+        var chrome = /^\s*at (?:(?:(?:Anonymous function)?|((?:\[object object\])?\S+(?: \[as \S+\])?)) )?\(?((?:file|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i,
+            gecko = /^(?:\s*(\S*)(?:\((.*?)\))?@)?((?:file|http|https).*?):(\d+)(?::(\d+))?\s*$/i,
             lines = ex.stack.split('\n'),
             stack = [],
             parts,
@@ -1176,13 +1176,16 @@ window.TraceKit = TraceKit;
 
     originalOnError = win.onerror;
 
-    win.onerror = function bandageOnError(errorMessage, file, lineNum, colNum) {
+    win.onerror = function bandageOnError(errorMessage, file, lineNum, colNum, error) {
       var args = arguments,
           self = this;
 
       if (Bandage.isCapturing) {
         // This will send the error to handleError
-        if (tracekit) {
+        if (error) {
+          // Stack Trace will be build on server side
+          makeRequest('UncaughtError', errorMessage, [], merge({}, Bandage._customData), error.stack);
+        } else if (tracekit) {
           tracekit.report.traceKitWindowOnError.apply(self, args);
         } else if(Bandage.depsSrc) {
           loadScript(Bandage.depsSrc, function() {
@@ -1249,7 +1252,7 @@ window.TraceKit = TraceKit;
     xhr.send(JSON.stringify(data));
   }
 
-  function makeRequest(type, message, stack, customData) {
+  function makeRequest(type, message, stack, customData, rawStack) {
     if (!Bandage.isCapturing) {
       return;
     }
@@ -1262,7 +1265,7 @@ window.TraceKit = TraceKit;
       time: new Date(),
       client: {
         name: 'bandage.js',
-        version: '0.3.0'
+        version: '0.3.1'
       },
       error: {
         type: type,
@@ -1290,7 +1293,8 @@ window.TraceKit = TraceKit;
         queryString: doc.location.search
       },
       data: customData,
-      stackTrace: rewriteStackTrace(stack)
+      stackTrace: rewriteStackTrace(stack),
+      rawStackTrace: rawStack || ''
     };
 
     sendRequest(Bandage.ENV === 'development' ? 'http://bandage.local:8181/add' : 'http://api.bandagejs.com/add', 'POST', {
@@ -1299,9 +1303,9 @@ window.TraceKit = TraceKit;
     });
   }
 
-  function sendDirectly(name, message, stack, customData) {
+  function sendDirectly(name, message, stack, customData, rawStack) {
     customData = merge(merge({}, Bandage._customData), customData || {});
-    makeRequest(name, message, stack || [], customData);
+    makeRequest(name, message, stack || [], customData, rawStack);
   }
 
   Bandage = {
@@ -1333,16 +1337,16 @@ window.TraceKit = TraceKit;
         customData = message;
         if (tracekit) {
           var error = tracekit.computeStackTrace(errorObj);
-          sendDirectly(error.name, error.message, error.stack || [], customData);
+          sendDirectly(error.name, error.message, error.stack || [], customData, errorObj.stack);
         } else if(Bandage.depsSrc) {
           loadScript(Bandage.depsSrc, function() {
             setupTraceKit();
             var error = tracekit.computeStackTrace(errorObj);
-            sendDirectly(error.name, error.message, error.stack || [], customData);
+            sendDirectly(error.name, error.message, error.stack || [], customData, errorObj.stack);
           });
         } else {
           // NOTE: Without tracekit it's really code intensive to get a unified stacktrace
-          sendDirectly(errorObj.name, errorObj.message, /*errorObj.stack ||*/ [], customData);
+          sendDirectly(errorObj.name, errorObj.message, /*errorObj.stack ||*/ [], customData, errorObj.stack);
         }
       } else { // it is a string
         if (typeof message !== 'string') {
