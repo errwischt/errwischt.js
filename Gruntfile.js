@@ -4,16 +4,16 @@ module.exports = function(grunt) {
   grunt.initConfig({
     concat: { // grunt-contrib-concat
       dist: {
-        src: ['bower_components/tracekit/tracekit.js', 'assets/javascripts/bandage.js'],
-        dest: 'bandage.js'
+        src: ['bower_components/tracekit/tracekit.js', 'assets/javascripts/errwischt.js'],
+        dest: 'dist/errwischt.js'
       },
       pureDist: {
-        src: ['assets/javascripts/bandage.js'],
-        dest: 'bandage.pure.js'
+        src: ['assets/javascripts/errwischt.js'],
+        dest: 'dist/errwischt.pure.js'
       },
       pureDep: {
         src: ['bower_components/tracekit/tracekit.js'],
-        dest: 'bandage.deps.js'
+        dest: 'dist/errwischt.deps.js'
       },
       options: {
         process: function(src) {
@@ -25,9 +25,9 @@ module.exports = function(grunt) {
     uglify: { // grunt-contrib-uglify
       dist: {
         files: {
-          'bandage.min.js': 'bandage.js',
-          'bandage.pure.min.js': 'bandage.pure.js',
-          'bandage.deps.min.js': 'bandage.deps.js'
+          'dist/errwischt.min.js': 'dist/errwischt.js',
+          'dist/errwischt.pure.min.js': 'dist/errwischt.pure.js',
+          'dist/errwischt.deps.min.js': 'dist/errwischt.deps.js'
         },
         options: {
           preserveComments: 'some'

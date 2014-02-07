@@ -1114,8 +1114,8 @@ window.TraceKit = TraceKit;
 
 }(window));
 ;/**
- * Bandage error handler, send error messages to server
- * Set bandage.data to have additional information send to the server
+ * Errwischt error handler, send error messages to server
+ * Set errwischt.data to have additional information send to the server
  * Needs JSON.stringify to send data to server
  */
 (function(win, doc, navigator) {
@@ -1129,7 +1129,7 @@ window.TraceKit = TraceKit;
       originalOnError,
       tracekit,
 
-      Bandage;
+      Errwischt;
 
   function calculateViewport() {
     var width = win.innerWidth || docElement.clientWidth || body.clientWidth,
@@ -1171,24 +1171,24 @@ window.TraceKit = TraceKit;
     tracekitSetUp = true;
   }
 
-  function enhanceOnError(bandage) {
+  function enhanceOnError() {
     if (alreadyEnhancedOnError) { return; }
 
     originalOnError = win.onerror;
 
-    win.onerror = function bandageOnError(errorMessage, file, lineNum, colNum, error) {
+    win.onerror = function errwischtOnError(errorMessage, file, lineNum, colNum, error) {
       var args = arguments,
           self = this;
 
-      if (Bandage.isCapturing) {
+      if (Errwischt.isCapturing) {
         // This will send the error to handleError
         if (error) {
           // Stack Trace will be build on server side
-          makeRequest('UncaughtError', errorMessage, [], merge({}, Bandage._customData), error.stack);
+          makeRequest('UncaughtError', errorMessage, [], merge({}, Errwischt._customData), error.stack);
         } else if (tracekit) {
           tracekit.report.traceKitWindowOnError.apply(self, args);
-        } else if(Bandage.depsSrc) {
-          loadScript(Bandage.depsSrc, function() {
+        } else if(Errwischt.depsSrc) {
+          loadScript(Errwischt.depsSrc, function() {
             setupTraceKit();
             tracekit.report.traceKitWindowOnError.apply(self, args);
           });
@@ -1218,7 +1218,7 @@ window.TraceKit = TraceKit;
   }
 
   function handleError(error) {
-    makeRequest('UncaughtError', error.message, error.stack, merge({}, Bandage._customData));
+    makeRequest('UncaughtError', error.message, error.stack, merge({}, Errwischt._customData));
   }
 
   function rewriteStackTrace(stack) {
@@ -1253,18 +1253,18 @@ window.TraceKit = TraceKit;
   }
 
   function makeRequest(type, message, stack, customData, rawStack) {
-    if (!Bandage.isCapturing) {
+    if (!Errwischt.isCapturing) {
       return;
     }
 
     var viewport = calculateViewport(),
-        token    = Bandage._apiKey,
+        token    = Errwischt._apiKey,
         obj;
 
     obj = {
       time: new Date(),
       client: {
-        name: 'bandage.js',
+        name: 'errwischt.js',
         version: '0.3.1'
       },
       error: {
@@ -1297,18 +1297,18 @@ window.TraceKit = TraceKit;
       rawStackTrace: rawStack || ''
     };
 
-    sendRequest(Bandage.ENV === 'development' ? 'http://bandage.local:8181/add' : 'http://api.bandagejs.com/add', 'POST', {
+    sendRequest(Errwischt.ENV === 'development' ? 'http://errwischt.local:8181/add' : 'http://api.errwischt.com/add', 'POST', {
       token: token,
       data: obj
     });
   }
 
   function sendDirectly(name, message, stack, customData, rawStack) {
-    customData = merge(merge({}, Bandage._customData), customData || {});
+    customData = merge(merge({}, Errwischt._customData), customData || {});
     makeRequest(name, message, stack || [], customData, rawStack);
   }
 
-  Bandage = {
+  Errwischt = {
     isCapturing: false,
     _customData: {},
 
@@ -1317,7 +1317,7 @@ window.TraceKit = TraceKit;
         this._apiKey = apiKey;
       }
 
-      enhanceOnError(this);
+      enhanceOnError();
       this.start();
     },
     start: function() {
@@ -1338,8 +1338,8 @@ window.TraceKit = TraceKit;
         if (tracekit) {
           var error = tracekit.computeStackTrace(errorObj);
           sendDirectly(error.name, error.message, error.stack || [], customData, errorObj.stack);
-        } else if(Bandage.depsSrc) {
-          loadScript(Bandage.depsSrc, function() {
+        } else if(Errwischt.depsSrc) {
+          loadScript(Errwischt.depsSrc, function() {
             setupTraceKit();
             var error = tracekit.computeStackTrace(errorObj);
             sendDirectly(error.name, error.message, error.stack || [], customData, errorObj.stack);
@@ -1360,5 +1360,5 @@ window.TraceKit = TraceKit;
   };
 
 
-  win.Bandage = Bandage;
+  win.Errwischt = Errwischt;
 }(window, document, navigator));

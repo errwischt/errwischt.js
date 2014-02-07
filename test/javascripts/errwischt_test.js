@@ -1,4 +1,4 @@
-describe('Bandage.js', function() {
+describe('Errwischt.js', function() {
   var server;
 
   function TestError(message) {
@@ -30,33 +30,33 @@ describe('Bandage.js', function() {
 
   describe('when not initialized', function() {
     it('.start does nothing', function() {
-      Bandage.start();
-      expect(Bandage.isCapturing).to.equal(false);
+      Errwischt.start();
+      expect(Errwischt.isCapturing).to.equal(false);
     });
   });
 
   describe('when initialized', function() {
     beforeEach(function() {
-      Bandage.setup('thisismyapikey');
+      Errwischt.setup('thisismyapikey');
     });
 
     it('has an api key', function() {
-      expect(Bandage._apiKey).to.equal('thisismyapikey');
+      expect(Errwischt._apiKey).to.equal('thisismyapikey');
     });
 
     it('.setup will flag it as capturing', function() {
-      Bandage.setup('thisismyapikey');
-      expect(Bandage.isCapturing).to.equal(true);
+      Errwischt.setup('thisismyapikey');
+      expect(Errwischt.isCapturing).to.equal(true);
     });
 
     it('.start will flag it as capturing', function() {
-      Bandage.start();
-      expect(Bandage.isCapturing).to.equal(true);
+      Errwischt.start();
+      expect(Errwischt.isCapturing).to.equal(true);
     });
 
     describe('when not started', function() {
       beforeEach(function() {
-        Bandage.stop();
+        Errwischt.stop();
       });
 
       it('.onerror will not send a request', function() {
@@ -65,7 +65,7 @@ describe('Bandage.js', function() {
       });
 
       it('.save will not send a request', function() {
-        Bandage.send(new TestError('My damn error'));
+        Errwischt.send(new TestError('My damn error'));
         // This two calls are from tracekit to determine stacktrace
         expect(server.requests.length).to.equal(2);
       });
@@ -73,52 +73,52 @@ describe('Bandage.js', function() {
 
     describe('when started', function() {
       beforeEach(function() {
-        Bandage.start();
+        Errwischt.start();
       });
 
       it('.stop/.start will flag it as non/do capturing', function() {
-        Bandage.stop();
-        expect(Bandage.isCapturing).to.equal(false);
-        Bandage.start();
-        expect(Bandage.isCapturing).to.equal(true);
+        Errwischt.stop();
+        expect(Errwischt.isCapturing).to.equal(false);
+        Errwischt.start();
+        expect(Errwischt.isCapturing).to.equal(true);
       });
 
       it('.send will send the request using the apiKey used in setup', function() {
-        server.respondWith('POST', 'http://api.bandagejs.com/add', [200, {}, "Oh hi"]);
-        Bandage.send('my test error');
+        server.respondWith('POST', 'http://api.errwischt.com/add', [200, {}, "Oh hi"]);
+        Errwischt.send('my test error');
         expect(server.requests.length).to.equal(1);
-        expect(server.requests[0].url).to.equal('http://api.bandagejs.com/add');
+        expect(server.requests[0].url).to.equal('http://api.errwischt.com/add');
         var body = JSON.parse(server.requests[0].requestBody);
         expect(body.token).to.equal('thisismyapikey');
       });
 
-      it('.send will send the request to bandage.local when on ENV=development', function() {
-        Bandage.ENV = 'development';
-        server.respondWith('POST', 'http://bandage.local:8181/add', [200, {}, "Oh hi"]);
-        Bandage.send('my test error');
+      it('.send will send the request to errwischt.local when on ENV=development', function() {
+        Errwischt.ENV = 'development';
+        server.respondWith('POST', 'http://errwischt.local:8181/add', [200, {}, "Oh hi"]);
+        Errwischt.send('my test error');
         expect(server.requests.length).to.equal(1);
-        expect(server.requests[0].url).to.equal('http://bandage.local:8181/add');
+        expect(server.requests[0].url).to.equal('http://errwischt.local:8181/add');
         var body = JSON.parse(server.requests[0].requestBody);
         expect(body.token).to.equal('thisismyapikey');
-        delete Bandage.ENV;
+        delete Errwischt.ENV;
       });
 
       it('.send with only message specified', function() {
-        Bandage.send('my test error');
+        Errwischt.send('my test error');
         var data = popLastSendData();
         expect(data.error.message).to.equal('my test error');
         expect(data.error.type).to.equal('SimpleError');
       });
 
       it('.send with message string and error name specified', function() {
-        Bandage.send('An Error', 'my test error');
+        Errwischt.send('An Error', 'my test error');
         var data = popLastSendData();
         expect(data.error.message).to.equal('my test error');
         expect(data.error.type).to.equal('An Error');
       });
 
       it('.send with a proper error', function() {
-        Bandage.send(new TestError('my test error'));
+        Errwischt.send(new TestError('my test error'));
         var data = popLastSendData();
         expect(data.error.message).to.equal('my test error');
         expect(data.error.type).to.equal('TestError');
@@ -135,13 +135,13 @@ describe('Bandage.js', function() {
     describe('a simple send error should have', function() {
       var errorData;
       beforeEach(function() {
-        Bandage.start();
-        Bandage.send(new TestError('my own error'));
+        Errwischt.start();
+        Errwischt.send(new TestError('my own error'));
         errorData = popLastSendData();
       });
 
       it('sends info about itself with error', function() {
-        expect(errorData.client.name).to.equal('bandage.js');
+        expect(errorData.client.name).to.equal('errwischt.js');
         expect(errorData.client.version).to.not.equal(null);
       });
 
@@ -160,10 +160,10 @@ describe('Bandage.js', function() {
       it('a stack trace', function() {
         expect(errorData.stackTrace.length).to.equal(6);
         var stackItem = errorData.stackTrace[0];
-        expect(stackItem.column).to.equal(22);
+        expect(stackItem.column).to.equal(24);
         expect(stackItem.lineNumber).to.equal(139);
         expect(stackItem.methodName).to.equal('Context.<anonymous>');
-        expect(stackItem.file).to.contain('bandage_test.js');
+        expect(stackItem.file).to.contain('errwischt_test.js');
       });
 
       it('the environment set', function() {
@@ -192,8 +192,8 @@ describe('Bandage.js', function() {
     describe('calling send with message and custom object', function() {
       var errorData;
       beforeEach(function() {
-        Bandage.start();
-        Bandage.send(new TestError('my own error'), { custom: 'data', foo: 42 });
+        Errwischt.start();
+        Errwischt.send(new TestError('my own error'), { custom: 'data', foo: 42 });
         errorData = popLastSendData();
       });
 
@@ -216,12 +216,12 @@ describe('Bandage.js', function() {
     describe('setting global custom data', function() {
       var errorData;
       beforeEach(function() {
-        Bandage.start();
-        Bandage.customData({ custom: 'yes', bar: 1 });
+        Errwischt.start();
+        Errwischt.customData({ custom: 'yes', bar: 1 });
       });
 
       it('sends the custom data along with only a message', function() {
-        Bandage.send('baam', { custom: 'data', foo: 42 });
+        Errwischt.send('baam', { custom: 'data', foo: 42 });
         errorData = popLastSendData();
         expect(errorData.error.message).to.equal('baam');
         expect(errorData.data.custom).to.equal('data');
@@ -239,7 +239,7 @@ describe('Bandage.js', function() {
 
       describe('calling send with message and own custom object', function() {
         beforeEach(function() {
-          Bandage.send(new Error('my own error'), { custom: 'data', foo: 42 });
+          Errwischt.send(new Error('my own error'), { custom: 'data', foo: 42 });
           errorData = popLastSendData();
         });
 

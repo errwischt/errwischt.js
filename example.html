@@ -1,17 +1,17 @@
 <html>
 <head>
   <title>Test</title>
-  <script src="bandage.pure.js"></script>
+  <script src="dist/errwischt.pure.js"></script>
   <script>
   function myTestFunc() {
     callme();
   }
   function sendIt() {
-    Bandage.send(new Error('i was send'));
+    Errwischt.send(new Error('i was send'));
   }
   (function() {
-    Bandage.setup('test');
-    Bandage.depsSrc = 'bandage.deps.js';
+    Errwischt.setup('test');
+    Errwischt.depsSrc = 'dist/errwischt.deps.js';
   }());
   </script>
 </head>
